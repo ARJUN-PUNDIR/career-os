@@ -1,0 +1,9 @@
+myenv/
+.env
+__pycache__/
+*.pyc
+.vscode/
+reports/
+rag_storage/
+*.db
+.DS_Store
