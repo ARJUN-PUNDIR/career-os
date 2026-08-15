@@ -8,7 +8,7 @@
 [![Playwright](https://img.shields.io/badge/Playwright-Browser_Automation-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 [![RapidAPI Hub](https://img.shields.io/badge/RapidAPI-API_Hub-0055FF?style=for-the-badge&logo=rapidapi&logoColor=white)](https://rapidapi.com/)
 [![SQLite3](https://img.shields.io/badge/SQLite3-MD5_Cache-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![Pytest](https://img.shields.io/badge/Pytest-Suite_Passed-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
 ---
 
@@ -55,31 +55,94 @@ Executes deterministic hard disqualification rules **before** LLM invocation (0 
 
 ---
 
-## 🧠 Master Graph Architecture
+## 🧠 Master System Architecture & Visual Flowchart
 
-```mermaid
-graph TD
-    START([START]) --> Parser[📄 Resume Parser Node<br/>$0-Token MD5 SQLite Cache]
-    
-    Parser --> Planner[🎯 Career Strategy Planner Node<br/>NVIDIA Nemotron LLM]
-    
-    Planner --> Searcher[🔍 3-Pillar Universal Search Engine<br/>JSearch API, Google ATS Indexing, Firecrawl]
-    
-    Searcher --> Ranker[📊 Deterministic ATS Ranker Node<br/>Hard Disqualifications: YOE, Location, Title]
-    
-    Ranker --> Gate1{🛑 Human Approval Gate 1<br/>Select Target Job 1 to N}
-    
-    Gate1 --> ATS_Scanner[🌐 Jobscan ATS Scanner API Node<br/>Match Score %, Missing Keywords]
-    
-    ATS_Scanner --> LaTeX_Architect[🎨 NVIDIA Nemotron LLM LaTeX Architect<br/>Surgical Keyword Infusion on Master Template]
-    
-    LaTeX_Architect --> PDF_Compiler[⚙️ Single-Page PDF Compiler Node<br/>Compiles Tailored PDF Resume]
-    
-    PDF_Compiler --> Browser_Agent[🤖 Playwright Browser Application Agent<br/>Firefox Engine, Form Auto-Fill, PDF Attachment]
-    
-    Browser_Agent --> Gate2{🛑 Human Approval Gate 2<br/>Pre-Submission Form Review & Approval}
-    
-    Gate2 --> END([END])
+```text
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   CAREEROS AGENTIC ENGINE PIPELINE                              │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 0] USER TARGET PREFERENCES                                                               │
+│ • Prompts Role, Preferred Locations (Remote, Gurugram, Delhi), Stipend Target                   │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 1] RESUME PARSER AGENT ($0-Token MD5 SQLite Cache)                                       │
+│ • Computes MD5 Cryptographic Checksum of Uploaded PDF Resume                                    │
+│ • Cache HIT -> Loads Profile from SQLite in <1ms (0 LLM Tokens Spent!)                           │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 2] CAREER STRATEGY PLANNER AGENT (NVIDIA Nemotron LLM)                                  │
+│ • Formulates 3-Pillar Search Strategy & Platform-Agnostic Query Sets                            │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 3] 3-PILLAR MULTI-AGENT JOB SEARCH ENGINES                                               │
+│ ├── Pillar 1: JSearch API (/search-v2, date_posted: week via RapidAPI Hub)                       │
+│ ├── Pillar 2: SerpAPI Google ATS Indexing (boards.greenhouse.io, jobs.lever.co, ashbyhq.com)    │
+│ └── Pillar 3: Firecrawl Web Scraper (Full Raw JD Content Extraction)                            │
+│ └── SQLite Deduplication Engine (Preserves Unique Job ID Records in data/career_os.db)          │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 4] ATS MULTI-FACTOR RANKING ENGINE (<10ms, 0 Tokens)                                     │
+│ • Enforces Hard YOE Disqualifier (disqualifies 2+ YOE for candidates <= 1 YOE)                   │
+│ • Enforces Senior Title Disqualifier (purges Senior, Lead, Manager, Staff, Principal)           │
+│ • Enforces Geographic Disqualifier (purges US/Foreign roles for India candidates)               │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🛑 [STAGE 5] HUMAN APPROVAL GATE 1 INTERRUPT                                                    │
+│ • Displays Sorted ATS Qualified Jobs Feed (1 to N)                                              │
+│ • Prompts Candidate: "Select Job Number [1 - N] to Target for Resume Tailoring"                 │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 6] DEDICATED ATS SCANNER API (RapidAPI Hub)                                              │
+│ • Evaluates Resume vs Target JD -> Returns Match Score %, Missing Hard & Soft Keywords          │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 7] NVIDIA NEMOTRON LLM SURGICAL LATEX ARCHITECT                                          │
+│ • Uses Master Jake's Resume Overleaf Base Code (jakegut/resume)                                 │
+│ • Weaves Missing ATS Keywords into Technical Skills & Project Bullet Points                     │
+│ • 100% Fact Preservation (Zero Hallucination of Dates, Degrees, or Companies)                  │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 8] SINGLE-PAGE PDF RESUME COMPILER                                                       │
+│ • Compiles arjun_master_jake_resume_<company>.tex -> Single-Page PDF Resume                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [STAGE 9] PLAYWRIGHT BROWSER APPLICATION AGENT (Firefox Engine)                                 │
+│ • Launches Firefox Persistent Profile (Zero Profile Locks & Saved Logins)                       │
+│ • Navigates to Target Apply URL -> Auto-clicks 'Apply / Register' Button                        │
+│ • Auto-fills Name, Email, Phone -> Attaches Tailored Single-Page PDF Resume                     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🛑 [STAGE 10] HUMAN APPROVAL GATE 2 INTERRUPT                                                   │
+│ • Pre-Submission Live Review Interrupt on Screen before final submission                        │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                 │
+                                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 🎉 COMPLETE AUTONOMOUS APPLICATION CYCLE                                                        │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -125,6 +188,7 @@ career-os/
 │   └── export_report.py           # SQLite DB Job Exporter to Markdown Report
 ├── data/                    # 🔒 100% Gitignored (SQLite DB, uploads, compiled PDFs, logs)
 ├── main.py                  # 🚀 Master Production Entrypoint CLI
+├── LICENSE                  # 📜 MIT License Legal Document
 ├── .env.example             # Environment configuration template
 ├── .gitignore               # Privacy & data protection ignore rules
 └── requirements.txt         # Project dependencies
@@ -205,6 +269,43 @@ python tests/test_browser_agent.py
 
 ---
 
-## 📜 License & Acknowledgments
+## 📜 License & Copyright
 
-Built with ❤️ by **Arjun Singh Pundir** using [LangGraph](https://www.langchain.com/langgraph), [NVIDIA Nemotron](https://build.nvidia.com/), [Playwright](https://playwright.dev/), [RapidAPI](https://rapidapi.com/), and [LaTeX](https://www.latex-project.org/).
+```text
+MIT License
+
+Copyright (c) 2026 Arjun Singh Pundir
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+<div align="center">
+
+### 💡 Designed & Engineered with ❤️ by **Arjun Singh Pundir**
+
+*Crafted with precision using [LangGraph](https://www.langchain.com/langgraph), [NVIDIA Nemotron LLM](https://build.nvidia.com/), [Playwright](https://playwright.dev/), [RapidAPI Hub](https://rapidapi.com/), and [Jake's Resume Overleaf Engine](https://github.com/jakegut/resume).*
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/arjun-pundir)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ARJUN-PUNDIR)
+
+*“Empowering candidate applications with autonomous multi-agent pipelines, zero-token caching, and surgical precision.”*
+
+</div>
