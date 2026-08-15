@@ -1,61 +1,73 @@
-# 🤖 CAREEROS: AUTONOMOUS MULTI-AGENT ATS RESUME & JOB APPLICATION PLATFORM
+# 🤖 CareerOS: Multi-Agent Job Search & Application Platform
 
-> **A modular multi-agent job application orchestrator built with LangGraph, NVIDIA Nemotron-3 LLM, Playwright, and RapidAPI Hub. It combines 3-pillar universal job search, 0-token deterministic ATS ranking, dedicated Jobscan gap analytics, surgical LaTeX keyword infusion (Jake's Resume layout), single-page PDF compilation, and automated browser form submissions with human-in-the-loop review gates.**
+> **An automated job discovery, resume tailoring, and application platform built with LangGraph, NVIDIA Nemotron-3 LLM, Playwright, and RapidAPI. CareerOS automates repetitive hiring tasks while keeping the candidate in control through explicit approval checkpoints.**
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Stateful_Workflows-FF6F61?style=for-the-badge&logo=langchain&logoColor=white)](https://www.langchain.com/langgraph)
 [![NVIDIA Nemotron](https://img.shields.io/badge/LLM-NVIDIA_Nemotron--3-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://build.nvidia.com/)
 [![Playwright](https://img.shields.io/badge/Playwright-Browser_Automation-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
-[![RapidAPI Hub](https://img.shields.io/badge/RapidAPI-API_Hub-0055FF?style=for-the-badge&logo=rapidapi&logoColor=white)](https://rapidapi.com/)
-[![SQLite3](https://img.shields.io/badge/SQLite3-MD5_Cache-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![RapidAPI](https://img.shields.io/badge/RapidAPI-API_Hub-0055FF?style=for-the-badge&logo=rapidapi&logoColor=white)](https://rapidapi.com/)
+[![SQLite3](https://img.shields.io/badge/SQLite3-Persistence-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
 ---
 
-## 🌟 Core Engineering Achievements
+## 🎯 Problem & Purpose
 
-### 1. 🌐 3-Pillar Universal Job Search Architecture
-Aggregates live job postings across 3 distinct search pillars with SQLite deduplication:
-- **Pillar 1 (JSearch API `/search-v2`)**: Targeted API queries filtered with `date_posted: week` and rate-limit controls via RapidAPI Hub.
-- **Pillar 2 (SerpAPI Google Indexing)**: Direct company ATS application pages (`boards.greenhouse.io`, `jobs.lever.co`, `ashbyhq.com`) with `tbs: qdr:m` recency filters.
-- **Pillar 3 (Firecrawl Web Scraper)**: Full raw Job Description extraction directly from company career portals.
+Current hiring workflows are highly fragmented. Candidates spend hours manually searching across disparate job portals, repeatedly tweaking resume keywords for individual postings, and filling out repetitive web application forms.
 
-### 2. 🤖 Fully Automated Job Application Submission (Playwright Engine)
-- Launches Playwright (Firefox Engine) with **0 profile lock conflicts**.
-- Automatically navigates to the target apply URL, auto-detects form fields (*Name, Email, Phone, LinkedIn, GitHub*), and attaches your compiled **single-page ATS-tailored PDF resume**.
-- Includes **Guided Human Handoff** and **Pre-Submission Review Interrupt (Gate 2)** for 100% application accuracy.
-
-### 3. 🎨 NVIDIA Nemotron LLM Surgical LaTeX Architect (Jake's Resume Layout)
-- Utilizes the gold-standard **Jake Gutierrez Overleaf LaTeX Template (`jakegut/resume`)**.
-- Performs **Surgical Keyword Infusion**: Weaves missing ATS keywords (*LlamaIndex, REST APIs, Git/GitHub, OpenAI APIs*) into project bullet points and technical skills without fabricating fake experience or altering real dates/degrees.
-- **0 Structural Breakage**: Preserves all custom LaTeX macros (`\resumeSubheading`, `\resumeProjectHeading`), margins, and single-page ATS layout formatting.
-
-### 4. ⚡ $0-Token Smart MD5 Hash Resume Caching (< 1ms Execution)
-- Computes an **MD5 cryptographic checksum** of candidate resume PDFs.
-- Bypasses LLM re-parsing completely on unchanged resume uploads, retrieving structured candidate profiles instantly from SQLite DB in **< 1ms with 0 token consumption**.
-
-### 5. 📊 100% Pure Python ATS Ranking & Hard Disqualification Engine (< 10ms)
-Executes deterministic hard disqualification rules **before** LLM invocation (0 LLM tokens, < 10ms speed):
-- **YOE Gap Filtering**: Disqualifies roles requiring 2+ YOE for fresher candidates (`candidate_yoe <= 1`).
-- **Seniority Filtering**: Disqualifies `Senior`, `Lead`, `Manager`, `Staff`, `Principal` titles.
-- **Geographic Filtering**: Disqualifies foreign locations for India-based candidates unless global/worldwide remote is specified.
-- **Recency Filtering**: Purges old or expired postings (>30 days).
-
-### 6. 🛑 Dual Human-in-the-Loop Approval Interrupt Gates
-- **Gate 1 (Job Selection)**: Interactive terminal menu to select 1 target job from the ATS-sorted qualified feed.
-- **Gate 2 (Pre-Submission Form Review)**: Playwright pauses live on screen with pre-filled fields and attached single-page PDF resume before submitting.
-
-### 7. 🌐 Dedicated Jobscan ATS Scanner API Integration
-- Connects directly to dedicated external ATS match scoring APIs on RapidAPI Hub (`AI Resume Screener & ATS Scorer API`).
-- Extracts match score percentages (0-100%), matched hard/soft skills, missing keywords, and recruiter recommendations.
-
-### 8. 🔀 Centralized Multi-Provider Model Factory & SQLite Tracking
-- Configurable model factory supporting **NVIDIA Nemotron-3 LLM (NIM API)**, **OpenAI**, and **Local Ollama**.
-- Maintains stateful application tracking and deduplication using SQLite (`data/career_os.db`).
+**CareerOS** automates these repetitive workflows — aggregating live listings across multiple sources, analyzing keyword gaps, formatting LaTeX resumes, and pre-filling portal forms — while keeping the candidate in full control through explicit human-in-the-loop checkpoints.
 
 ---
 
-## 🧠 Master System Architecture & Visual Flowchart
+## 🛠️ Tech Stack & Capabilities
+
+| Domain | Technology / Framework | Implementation Details |
+| :--- | :--- | :--- |
+| **Agent Orchestration** | `LangGraph`, `StateGraph`, `AgentState` | Multi-agent state machine with human-in-the-loop approval gates |
+| **LLM Engine** | `NVIDIA Nemotron-3 LLM` (`NIM API`) | Career strategy planning & context-aware LaTeX keyword infusion |
+| **API Integration** | `RapidAPI` (`JSearch API`, `ATS Scorer API`) | REST endpoints for live job discovery & heuristic keyword gap analysis |
+| **Browser Automation** | `Playwright` (Firefox Engine) | Automates supported application flows & hands control back when manual interaction is needed |
+| **Multi-Source Search** | `JSearch API`, `SerpAPI`, `Firecrawl` | Aggregates listings across job boards & direct company ATS portals |
+| **Resume Engine** | `LaTeX Compiler`, `pdfplumber` | Single-page PDF generation (Default: Jake's Resume, supports custom templates) |
+| **Storage & Caching** | `SQLite3`, `MD5 Hashing` | Resume hash caching for deduplication & stateful application tracking |
+
+---
+
+## 🌟 Core System Capabilities
+
+### 1. 🌐 Multi-Source Job Discovery Engine
+Aggregates live job postings across 3 complementary search sources with SQLite deduplication:
+- **Pillar 1 (JSearch API)**: Job board API search filtered by recent posting dates (`date_posted: week`).
+- **Pillar 2 (SerpAPI Google Indexing)**: Indexes direct ATS portals (`boards.greenhouse.io`, `jobs.lever.co`, `ashbyhq.com`).
+- **Pillar 3 (Firecrawl Web Reader)**: Extracts job description text directly from target career pages.
+
+### 2. 🤖 Browser-Based Application Automation (Playwright Engine)
+- Automates supported application flows by detecting common form inputs (*Name, Email, Phone, LinkedIn, GitHub*) and attaching the tailored PDF resume.
+- Gracefully hands control back to the user when manual interaction (CAPTCHA, OTP, custom assessments) is required.
+
+### 3. 🎨 LLM-Assisted LaTeX Resume Architect
+- **Default Template**: Supports *Jake's Resume* layout with extensibility for custom LaTeX templates.
+- **Keyword Alignment**: Weaves missing ATS keywords into technical skills and project descriptions based on target job requirements.
+- **Fact Verification**: Reflection-based verification prevents unsupported additions before generating the final resume.
+
+### 4. ⚡ Resume Hash Caching
+- Computes an MD5 checksum of uploaded resume PDFs.
+- Reuses parsed profile structures on unchanged uploads, skipping unnecessary LLM re-parsing calls.
+
+### 5. 📊 Deterministic ATS Ranking Engine
+Applies rule-based heuristic scoring combined with keyword analysis to filter and order listings before candidate review:
+- **Experience Filtering**: Filters roles requiring higher YOE thresholds than the candidate's profile.
+- **Title Filtering**: Filters senior, lead, or managerial titles for entry-level preferences.
+- **Geographic Filtering**: Filters non-matching location requirements based on user preferences.
+
+### 6. 🛑 Human-in-the-Loop Checkpoints
+- **Checkpoint 1 (Job Selection)**: Candidate manually inspects the ranked job feed and selects the target position.
+- **Checkpoint 2 (Form Review)**: Candidate reviews the pre-filled application form in the browser before final submission.
+
+---
+
+## 🧠 Master System Architecture
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -65,140 +77,125 @@ Executes deterministic hard disqualification rules **before** LLM invocation (0 
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ [STAGE 0] USER TARGET PREFERENCES                                                               │
-│ • Prompts Role, Preferred Locations (Remote, Gurugram, Delhi), Stipend Target                   │
+│ • Prompts Role, Preferred Locations, and Compensation Preferences                               │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ [STAGE 1] RESUME PARSER AGENT ($0-Token MD5 SQLite Cache)                                       │
-│ • Computes MD5 Cryptographic Checksum of Uploaded PDF Resume                                    │
-│ • Cache HIT -> Loads Profile from SQLite in <1ms (0 LLM Tokens Spent!)                           │
+│ [STAGE 1] RESUME PARSER NODE (MD5 Hash Caching)                                                │
+│ • Computes MD5 Hash Checksum of Uploaded PDF Resume                                             │
+│ • Cache HIT -> Retrieves Profile from SQLite DB                                                 │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ [STAGE 2] CAREER STRATEGY PLANNER AGENT (NVIDIA Nemotron LLM)                                  │
-│ • Formulates 3-Pillar Search Strategy & Platform-Agnostic Query Sets                            │
+│ [STAGE 2] CAREER STRATEGY PLANNER NODE (NVIDIA Nemotron LLM)                                   │
+│ • Generates Query Sets across Multi-Source Job Channels                                         │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ [STAGE 3] 3-PILLAR MULTI-AGENT JOB SEARCH ENGINES                                               │
-│ ├── Pillar 1: JSearch API (/search-v2, date_posted: week via RapidAPI Hub)                       │
-│ ├── Pillar 2: SerpAPI Google ATS Indexing (boards.greenhouse.io, jobs.lever.co, ashbyhq.com)    │
-│ └── Pillar 3: Firecrawl Web Scraper (Full Raw JD Content Extraction)                            │
-│ └── SQLite Deduplication Engine (Preserves Unique Job ID Records in data/career_os.db)          │
+│ [STAGE 3] MULTI-SOURCE JOB DISCOVERY ENGINE                                                     │
+│ ├── Pillar 1: JSearch API (Job Board Search)                                                    │
+│ ├── Pillar 2: SerpAPI Google Indexing (Greenhouse, Lever, Ashby ATS Portals)                   │
+│ └── Pillar 3: Firecrawl Web Reader (Direct Job Description Extraction)                         │
+│ └── SQLite Deduplication Engine (Deduplicates Postings in data/career_os.db)                   │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ [STAGE 4] ATS MULTI-FACTOR RANKING ENGINE (<10ms, 0 Tokens)                                     │
-│ • Enforces Hard YOE Disqualifier (disqualifies 2+ YOE for candidates <= 1 YOE)                   │
-│ • Enforces Senior Title Disqualifier (purges Senior, Lead, Manager, Staff, Principal)           │
-│ • Enforces Geographic Disqualifier (purges US/Foreign roles for India candidates)               │
+│ [STAGE 4] DETERMINISTIC ATS RANKING ENGINE                                                      │
+│ • Applies Rule-Based Experience, Title, and Location Filters                                    │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 🛑 [STAGE 5] HUMAN APPROVAL GATE 1 INTERRUPT                                                    │
-│ • Displays Sorted ATS Qualified Jobs Feed (1 to N)                                              │
-│ • Prompts Candidate: "Select Job Number [1 - N] to Target for Resume Tailoring"                 │
+│ 🛑 [STAGE 5] HUMAN CHECKPOINT 1: JOB SELECTION                                                  │
+│ • Candidate Reviews Ranked Feed & Selects Target Position                                       │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ [STAGE 6] DEDICATED ATS SCANNER API (RapidAPI Hub)                                              │
-│ • Evaluates Resume vs Target JD -> Returns Match Score %, Missing Hard & Soft Keywords          │
+│ [STAGE 6] ATS SCANNER API                                                                       │
+│ • Compares Resume vs Job Description -> Returns Keyword Analysis & Gap Report                  │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ [STAGE 7] NVIDIA NEMOTRON LLM SURGICAL LATEX ARCHITECT                                          │
-│ • Uses Master Jake's Resume Overleaf Base Code (jakegut/resume)                                 │
-│ • Weaves Missing ATS Keywords into Technical Skills & Project Bullet Points                     │
-│ • 100% Fact Preservation (Zero Hallucination of Dates, Degrees, or Companies)                  │
+│ [STAGE 7] LATEX RESUME ARCHITECT (NVIDIA Nemotron LLM)                                          │
+│ • Infuses Keywords into Selected Template (Default: Jake's Resume)                              │
+│ • Applies Reflection-Based Verification to Prevent Unsupported Additions                        │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ [STAGE 8] SINGLE-PAGE PDF RESUME COMPILER                                                       │
-│ • Compiles arjun_master_jake_resume_<company>.tex -> Single-Page PDF Resume                     │
+│ [STAGE 8] PDF RESUME COMPILER                                                                   │
+│ • Compiles LaTeX Source -> Generates Tailored Single-Page PDF Resume                             │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ [STAGE 9] PLAYWRIGHT BROWSER APPLICATION AGENT (Firefox Engine)                                 │
-│ • Launches Firefox Persistent Profile (Zero Profile Locks & Saved Logins)                       │
-│ • Navigates to Target Apply URL -> Auto-clicks 'Apply / Register' Button                        │
-│ • Auto-fills Name, Email, Phone -> Attaches Tailored Single-Page PDF Resume                     │
+│ [STAGE 9] BROWSER APPLICATION AGENT (Playwright Engine)                                         │
+│ • Navigates to Target Portal -> Auto-Fills Standard Fields & Attaches Tailored PDF Resume       │
+│ • Gracefully Hands Control Back when Manual Interaction is Required                             │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 🛑 [STAGE 10] HUMAN APPROVAL GATE 2 INTERRUPT                                                   │
-│ • Pre-Submission Live Review Interrupt on Screen before final submission                        │
+│ 🛑 [STAGE 10] HUMAN CHECKPOINT 2: FORM REVIEW                                                   │
+│ • Candidate Reviews Pre-Filled Form in Browser prior to final submission                        │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                  │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 🎉 COMPLETE AUTONOMOUS APPLICATION CYCLE                                                        │
+│ 🎉 PIPELINE COMPLETE                                                                            │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ⚡ 3-Pillar Search & Intent Execution Matrix
-
-| Search Pillar | Description | Target Platforms | API / Protocol Engine | Storage & Deduplication |
-|---|---|---|---|---|
-| 🌐 **`Pillar 1`** | Live job API search filtered by recency (`date_posted: week`) | RapidAPI JSearch (`/search-v2`) | Dedicated REST API Client | SQLite DB (`data/career_os.db`) |
-| 🔍 **`Pillar 2`** | Google ATS Indexing (`tbs: qdr:m`) targeting direct ATS portals | `boards.greenhouse.io`, `jobs.lever.co`, `ashbyhq.com` | SerpAPI Google Search Engine | SQLite DB (`data/career_os.db`) |
-| 📚 **`Pillar 3`** | Full raw Job Description web extraction | Direct Company Career Portals | Firecrawl Scraper | SQLite DB (`data/career_os.db`) |
-
----
-
-## 📁 Domain-Grouped Directory Structure
+## 📁 Project Structure
 
 ```text
 career-os/
 ├── app/
-│   ├── agents/              # 📁 Autonomous Agent Workflow Nodes
-│   │   ├── parser.py        # Resume Parser Agent ($0-Token MD5 SQLite Cache)
-│   │   ├── planner.py       # Career Strategy Planner Agent (NVIDIA Nemotron LLM)
-│   │   ├── searcher.py      # 3-Pillar Universal Job Search Engine Node
-│   │   ├── ranker.py        # Deterministic ATS Multi-Factor Ranking Engine Node
-│   │   ├── latex_agent.py   # NVIDIA Nemotron LLM Surgical LaTeX Architect Agent
-│   │   ├── compiler.py      # Single-Page PDF Resume Compiler Agent Node
+│   ├── agents/              # Autonomous Agent Workflow Nodes
+│   │   ├── parser.py        # Resume Parser Node (MD5 Hash Caching)
+│   │   ├── planner.py       # Career Strategy Planner Node
+│   │   ├── searcher.py      # Multi-Source Job Discovery Node
+│   │   ├── ranker.py        # Deterministic ATS Ranking Engine Node
+│   │   ├── latex_agent.py   # LaTeX Resume Architect Node
+│   │   ├── compiler.py      # Single-Page PDF Resume Compiler Node
 │   │   └── browser.py       # Playwright Browser Application Agent Node
-│   ├── config/              # Centralized environment settings & Model Factory
-│   │   ├── settings.py      # Environment variables & directory paths
-│   │   └── model_factory.py # NVIDIA Nemotron / OpenAI / Ollama Model Factory
-│   ├── graph/               # 📁 LangGraph State Machine & Orchestration
+│   ├── config/              # Centralized Environment Settings & Model Factory
+│   │   ├── settings.py      # Environment variables & paths
+│   │   └── model_factory.py # Model Factory (NVIDIA Nemotron / OpenAI / Ollama)
+│   ├── graph/               # LangGraph State Machine & Orchestration
 │   │   ├── state.py         # AgentState TypedDict schema
-│   │   └── workflow.py      # Master LangGraph edge wiring & state machine compilation
+│   │   └── workflow.py      # LangGraph state machine compilation
 │   ├── schemas/             # Pydantic data models (CandidateProfile, UnifiedJobListing)
-│   ├── services/            # Dedicated RapidAPI ATS Scanner API Client
-│   ├── templates/           # 📄 Master Jake's Resume Overleaf LaTeX Base Code (jake.tex)
-│   └── tracker/             # SQLite DB Tracker & MD5 Hash Deduplication Engine
-├── tests/                   # 🧪 Standalone Modular Test Suite
-│   ├── test_full_resume_ats_api.py # ATS Scanner API Test Runner
-│   ├── test_jakes_resume_latex.py # Surgical LaTeX Architect & PDF Compiler Test
-│   ├── test_browser_agent.py      # Playwright Browser Agent Test Runner
-│   ├── test_playwright_visual_demo.py # Visual Playwright Demo Script
-│   └── export_report.py           # SQLite DB Job Exporter to Markdown Report
-├── data/                    # 🔒 100% Gitignored (SQLite DB, uploads, compiled PDFs, logs)
-├── main.py                  # 🚀 Master Production Entrypoint CLI
-├── LICENSE                  # 📜 MIT License Legal Document
+│   ├── services/            # ATS Scanner API Client
+│   ├── templates/           # Master LaTeX Templates (jake.tex)
+│   └── tracker/             # SQLite DB Tracker & Deduplication Engine
+├── tests/                   # Standalone Modular Test Suite
+│   ├── test_full_resume_ats_api.py
+│   ├── test_jakes_resume_latex.py
+│   ├── test_browser_agent.py
+│   ├── test_playwright_visual_demo.py
+│   └── export_report.py
+├── data/                    # 🔒 Gitignored (SQLite DB, uploads, compiled PDFs, logs)
+├── main.py                  # Master Production Entrypoint CLI
+├── LICENSE                  # MIT License
 ├── .env.example             # Environment configuration template
-├── .gitignore               # Privacy & data protection ignore rules
+├── .gitignore               # Ignore rules
 └── requirements.txt         # Project dependencies
 ```
 
 ---
 
-## 🚀 Quickstart & Setup Guide
+## 🚀 Quickstart & Setup
 
-### 1. Environment Setup (`.env`)
+### 1. Environment Setup
 Clone the repository and set up a virtual environment:
 ```bash
 git clone https://github.com/ARJUN-PUNDIR/career-os.git
@@ -210,61 +207,30 @@ pip install -r requirements.txt
 playwright install firefox
 ```
 
-### 2. Configure API Credentials in `.env`
-Copy `.env.example` to `.env` and fill in your API keys:
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env` and configure credentials:
 ```bash
 cp .env.example .env
 ```
 
 ```env
-# NVIDIA Nemotron-3 LLM Engine
-NVIDIA_API_KEY=nvapi-your-nvidia-api-key-here
-
-# RapidAPI Hub Key (JSearch & ATS Matcher API)
-RAPIDAPI_KEY=your_rapidapi_key_here
-
-# SerpAPI Google ATS Search
-SERPAPI_KEY=your_serpapi_key_here
-
-# Firecrawl Web Scraper
-FIRECRAWL_API_KEY=your_firecrawl_api_key_here
+NVIDIA_API_KEY=your_nvidia_nemotron_api_key
+RAPIDAPI_KEY=your_rapidapi_key
+SERPAPI_KEY=your_serpapi_key
+FIRECRAWL_API_KEY=your_firecrawl_api_key
 ```
 
-### 3. Run Master Production Pipeline
+### 3. Execution
+Run the master pipeline CLI:
 ```bash
 python main.py
 ```
 
-### 4. Run Standalone Test Runners
+Run individual module tests:
 ```bash
-# Test Dedicated ATS Scanner API
 python tests/test_full_resume_ats_api.py
-
-# Test Surgical LaTeX Architect & PDF Compiler
 python tests/test_jakes_resume_latex.py
-
-# Test Playwright Browser Application Agent
 python tests/test_browser_agent.py
-
-# Export SQLite Jobs DB to Markdown Report
-python tests/export_report.py
-```
-
----
-
-## 🧪 Running Unit Tests
-
-Run the standalone modular test suite inside `tests/`:
-```bash
-python tests/test_browser_agent.py
-```
-
-```text
-=====================================================================================
-🎉 REAL DEMO: PLAYWRIGHT BROWSER AGENT COMPLETE!
-   Attached Resume PDF: arjun_master_jake_resume_digitalxnode.pdf
-   Application Status:  SUBMITTED_OR_REVIEWED
-=====================================================================================
 ```
 
 ---
@@ -299,13 +265,11 @@ SOFTWARE.
 
 <div align="center">
 
-### 💡 Designed & Engineered with ❤️ by **Arjun Singh Pundir**
+### 💡 Designed & Engineered by **Arjun Singh Pundir**
 
-*Crafted with precision using [LangGraph](https://www.langchain.com/langgraph), [NVIDIA Nemotron LLM](https://build.nvidia.com/), [Playwright](https://playwright.dev/), [RapidAPI Hub](https://rapidapi.com/), and [Jake's Resume Overleaf Engine](https://github.com/jakegut/resume).*
+*Built with [LangGraph](https://www.langchain.com/langgraph), [NVIDIA Nemotron LLM](https://build.nvidia.com/), [Playwright](https://playwright.dev/), [RapidAPI](https://rapidapi.com/), and [LaTeX](https://www.latex-project.org/).*
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com)
-
-*“Empowering candidate applications with autonomous multi-agent pipelines, zero-token caching, and surgical precision.”*
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github)
 
 </div>
