@@ -303,8 +303,8 @@ SOFTWARE.
 
 *Crafted with precision using [LangGraph](https://www.langchain.com/langgraph), [NVIDIA Nemotron LLM](https://build.nvidia.com/), [Playwright](https://playwright.dev/), [RapidAPI Hub](https://rapidapi.com/), and [Jake's Resume Overleaf Engine](https://github.com/jakegut/resume).*
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/arjun-pundir)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ARJUN-PUNDIR)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com)
 
 *“Empowering candidate applications with autonomous multi-agent pipelines, zero-token caching, and surgical precision.”*
 
