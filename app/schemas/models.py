@@ -28,6 +28,8 @@ class CandidateProfile(BaseModel):
     email: str = Field(description="Email address")
     phone: str = Field(description="Phone number")
     location: str = Field(description="Current city/country")
+    years_of_experience: int = Field(default=0, description="Total years of professional experience (0 for fresher/interns)")
+    experience_level: str = Field(default="Fresher", description="Candidate level: Fresher, Junior (1-2 YOE), Mid-Level (3-5 YOE), Senior (5+ YOE)")
     linkedin_url: Optional[str] = Field(default="", description="LinkedIn profile URL")
     github_url: Optional[str] = Field(default="", description="GitHub profile URL")
     portfolio_url: Optional[str] = Field(default="", description="Personal website portfolio URL")

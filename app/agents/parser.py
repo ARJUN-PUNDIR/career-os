@@ -1,10 +1,17 @@
 import pdfplumber
 import os
+import hashlib
 from typing import Dict, Any
 from app.config.settings import settings
 from app.config.model_factory import get_llm
 from app.schemas.models import CandidateProfile
 from app.graph.state import AgentState
+from app.tracker.db import get_cached_resume_profile, save_resume_profile_cache
+
+def calculate_pdf_hash(pdf_path: str) -> str:
+    """Calculates MD5 hash of raw PDF file contents to detect file changes."""
+    with open(pdf_path, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     """Extracts raw text content from a PDF file using pdfplumber."""
@@ -22,12 +29,26 @@ def extract_text_from_pdf(pdf_path: str) -> str:
 
 def parse_resume_node(state: AgentState) -> Dict[str, Any]:
     """
-    LangGraph Node: Ingests state['resume_pdf_path'], extracts text, 
-    and uses LLM structured output to produce CandidateProfile JSON.
+    LangGraph Node with $0-Token Smart Caching:
+    1. Computes MD5 hash of PDF file.
+    2. If hash matches SQLite DB, loads profile in <1ms (0 LLM Tokens spent!).
+    3. If PDF is new or updated, calls LLM and saves to cache.
     """
     pdf_path = state.get("resume_pdf_path")
-    print(f"📄 [Parser Agent] Reading resume from: {pdf_path}")
+    print(f"📄 [Parser Agent] Checking resume file: {pdf_path}")
     
+    # 1. Compute PDF MD5 Hash
+    pdf_hash = calculate_pdf_hash(pdf_path)
+    
+    # 2. Check SQLite DB Cache
+    cached_profile_dict = get_cached_resume_profile(pdf_hash)
+    if cached_profile_dict:
+        print("💾 [Parser Cache HIT] Resume PDF unchanged. Loaded profile from SQLite DB (0 LLM Tokens spent)!")
+        candidate_profile = CandidateProfile.model_validate(cached_profile_dict)
+        return {"candidate_profile": candidate_profile}
+        
+    # 3. Cache MISS: Parse PDF via LLM
+    print("⚡ [Parser Cache MISS] New or updated PDF detected! Parsing via LLM...")
     raw_text = extract_text_from_pdf(pdf_path)
     
     llm = get_llm(temperature=0.0)
@@ -45,18 +66,11 @@ def parse_resume_node(state: AgentState) -> Dict[str, Any]:
     """
     
     candidate_profile: CandidateProfile = structured_llm.invoke(prompt)
-    print(f"✅ [Parser Agent] Successfully extracted profile for: {candidate_profile.full_name}")
+    
+    # 4. Save to Cache
+    save_resume_profile_cache(pdf_hash, candidate_profile.model_dump())
+    print(f"✅ [Parser Agent] Successfully parsed & cached profile for: {candidate_profile.full_name}")
     
     return {
         "candidate_profile": candidate_profile
     }
-
-if __name__ == "__main__":
-    # Test stub for Parser Agent
-    test_pdf = os.path.join(settings.UPLOADS_DIR, "test_resume.pdf")
-    if os.path.exists(test_pdf):
-        state: AgentState = {"resume_pdf_path": test_pdf} # type: ignore
-        result = parse_resume_node(state)
-        print(result["candidate_profile"].model_dump_json(indent=2))
-    else:
-        print("💡 Place a test resume PDF at data/uploads/test_resume.pdf to test parsing!")

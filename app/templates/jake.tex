@@ -1,0 +1,153 @@
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Balanced Page Margins to Fill 1 Page
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.0in}
+\addtolength{\topmargin}{-0.45in}
+\addtolength{\textheight}{0.95in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Section Titles Formatting & Balanced Spacing
+\titleformat{\section}{
+  \scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{-2pt}]
+
+\titlespacing*{\section}{0pt}{9pt}{5pt}
+
+% ATS metadata
+\pdfgentounicode=1
+
+% Standardized Custom Commands
+\newcommand{\resumeItem}[1]{
+  \item \small{#1}
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small#4} \\
+    \end{tabular*}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+  \item
+    \begin{tabular*}{1.0\textwidth}{l@{\extracolsep{\fill}}r}
+      #1 & #2 \\
+    \end{tabular*}
+}
+
+% Uniform List Environments
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0in, label={}, itemsep=7pt, topsep=1pt, partopsep=0pt, parsep=0pt]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=14pt, label=$\bullet$, itemsep=2.5pt, topsep=3pt, partopsep=0pt, parsep=0pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}}
+
+%-------------------------------------------
+%%%%%%        RESUME STARTS HERE      %%%%%%
+%-------------------------------------------
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    {\Huge \textbf{Arjun Singh Pundir}} \\ \vspace{4pt}
+    \small Gurugram, Haryana, India \ $|$ \ +91-8595269655 \ $|$ \ \href{mailto:arjun.pundir7626@gmail.com}{\underline{arjun.pundir7626@gmail.com}} \\ \vspace{3pt}
+    \href{https://linkedin.com/in/arjun-pundir}{\underline{linkedin.com/in/arjun-pundir}} \ $|$ \ 
+    \href{https://github.com/ARJUN-PUNDIR}{\underline{github.com/ARJUN-PUNDIR}}
+\end{center}
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {KIET Deemed to be University}{Ghaziabad, India}
+      {B.Tech in Computer Science (Artificial Intelligence \& Machine Learning) $|$ CGPA: 8.66}{2024 -- 2028}
+      \vspace{-3pt}
+      \item \small{\textbf{Coursework:} Data Structures \& Algorithms, Machine Learning, Operating Systems, OOP, Probability \& Statistics}
+  \resumeSubHeadingListEnd
+
+%-----------TECHNICAL SKILLS-----------
+\section{Technical Skills}
+  \begin{itemize}[leftmargin=0in, label={}, itemsep=3pt, topsep=1pt, partopsep=0pt, parsep=0pt]
+    \small{
+      \item \textbf{Languages:} C++, Python, SQL, Bash
+      \item \textbf{AI \& Generative AI:} LangGraph, LangChain, Ollama, RAG Pipelines, Multi-Agent Systems, Cross-Encoder Re-ranking, Model Context Protocol (MCP), FAISS, RAGAS Evals, PyTorch, Pandas, NumPy, LlamaIndex, OpenAI APIs
+      \item \textbf{Backend \& Cloud:} FastAPI, Docker, SQLite, Playwright, RESTful APIs, AWS (Cloud Practitioner, Solutions Architect Associate)
+      \item \textbf{Core Concepts:} Data Structures \& Algorithms, Graph Theory, Object-Oriented Programming, Probability \& Statistics
+      \item \textbf{Tools:} Git, GitHub, Linux, Pytest, VS Code
+    }
+  \end{itemize}
+
+%-----------PROJECTS-----------
+\section{Projects}
+  \resumeSubHeadingListStart
+
+    \resumeProjectHeading
+      {\textbf{Nexus AI -- Autonomous Multi-Agent Research Platform} $|$ \emph{LangGraph, Ollama, FAISS, FastAPI, Docker, LlamaIndex, OpenAI APIs}}{}
+      \resumeItemListStart
+        \resumeItem{Architected a stateful multi-agent research workflow engine using LangGraph and Ollama with persistent SQLite checkpointing and human-in-the-loop plan reviews.}
+        \resumeItem{Engineered a 4-way Intent Router and parallel web search using ThreadPoolExecutor to minimize query latency and reduce API calls.}
+        \resumeItem{Implemented a two-stage local document RAG engine pairing FAISS dense vector search with Cross-Encoder re-ranking and LlamaIndex integrations to filter context noise.}
+        \resumeItem{Integrated a self-correcting reflection audit loop and automated RAGAS evaluation pipelines backed by a 26-test Pytest suite.}
+      \resumeItemListEnd
+
+    \resumeProjectHeading
+      {\textbf{CareerOS -- Autonomous ATS Resume Engine \& Application Platform} $|$ \emph{LangGraph, MCP, Playwright, FastAPI, REST APIs, Git}}{}
+      \resumeItemListStart
+        \resumeItem{Built a multi-agent job application orchestrator with human-in-the-loop gates for candidate job selection and resume diff inspection.}
+        \resumeItem{Implemented a unified job discovery engine aggregating JSearch, SerpAPI, and Firecrawl MCP servers with SQLite deduplication.}
+        \resumeItem{Developed a deterministic Python ATS audit engine for real-time keyword alignment and automated single-page ATS-compliant PDF compilation.}
+        \resumeItem{Automated portal form fills across Greenhouse and Lever using Playwright MCP adapters with fallback human handoff mechanisms.}
+      \resumeItemListEnd
+
+    \resumeProjectHeading
+      {\textbf{Multi-Node Resource Routing Simulator} $|$ \emph{C++, Advanced DSA, Graph Theory}}{}
+      \resumeItemListStart
+        \resumeItem{Designed a routing engine using A* search and Dijkstra's algorithms for optimized resource allocation.}
+        \resumeItem{Adapted efficiently to dynamic constraints and changing edge weights in real time over complex network topologies.}
+      \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+%-----------CERTIFICATIONS-----------
+\section{Certifications}
+  \resumeSubHeadingListStart
+    \resumeProjectHeading
+      {\textbf{AWS Certified Solutions Architect -- Associate (SAA-C03)}}{Apr 2026}
+    \resumeProjectHeading
+      {\textbf{AWS Certified Cloud Practitioner (CLF-C02)}}{Dec 2025}
+  \resumeSubHeadingListEnd
+
+%-----------ACHIEVEMENTS & LEADERSHIP-----------
+\section{Achievements \& Leadership}
+  \resumeItemListStart
+    \resumeItem{Solved 200+ Data Structures and Algorithms problems on LeetCode and Codeforces focusing on graph traversal and optimization algorithms.}
+    \resumeItem{Awarded 'Best Coder' (1st Year): Recognized across the university for strong problem-solving and optimization skills in DSA.}
+    \resumeItem{Core Organizer at E-Cell KIET: Managed partnerships and outreach for flagship entrepreneurship events, increasing student participation by 45\%.}
+  \resumeItemListEnd
+
+\end{document}

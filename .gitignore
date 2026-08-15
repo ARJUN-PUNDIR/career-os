@@ -1,9 +1,36 @@
-myenv/
+# Privacy & Sensitive Data Protection Rules for CareerOS
+# Ignore ALL contents of data directory
+data/
+data/*
+data/**/*
+
+# Generated Files
+*.pdf
+*.log
+*.db
+*.db-journal
+
+# Environment & Secrets
 .env
+.env.local
+.env.*.local
+
+# Virtual Environment
+myenv/
+venv/
+ENV/
+env/
+
+# Python Cache & IDE Artifacts
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+.idea/
 .vscode/
-reports/
-rag_storage/
-*.db
+
+# OS Files
 .DS_Store
+Thumbs.db
