@@ -74,42 +74,63 @@
 
 %----------HEADING----------
 \begin{center}
-    {\Huge \textbf{{{FULL_NAME}} }} \\ \vspace{4pt}
-    \small {{LOCATION}} \ $|$ \ {{PHONE}} \ $|$ \ \href{mailto:{{EMAIL}}}{\underline{{{EMAIL}}}} \\ \vspace{3pt}
-    \href{{{LINKEDIN_URL}}}{\underline{{{LINKEDIN_URL}}}} \ $|$ \ 
-    \href{{{GITHUB_URL}}}{\underline{{{GITHUB_URL}}}}
+    {\Huge \textbf{FIRSTNAME LASTNAME}} \\ \vspace{4pt}
+    \small City, State, Country \ $|$ \ +1-000-000-0000 \ $|$ \ \href{mailto:email@example.com}{\underline{email@example.com}} \\ \vspace{3pt}
+    \href{https://linkedin.com}{\underline{linkedin.com/in/example}} \ $|$ \ 
+    \href{https://github.com}{\underline{github.com/example}}
 \end{center}
 
 %-----------EDUCATION-----------
 \section{Education}
   \resumeSubHeadingListStart
-    {{EDUCATION_SECTION}}
+    \resumeSubheading
+      {Sample University}{City, Country}
+      {B.S. in Computer Science $|$ GPA: 3.8/4.0}{2021 -- 2025}
+      \vspace{-3pt}
+      \item \small{\textbf{Coursework:} Data Structures, Algorithms, Operating Systems, Machine Learning}
   \resumeSubHeadingListEnd
 
 %-----------TECHNICAL SKILLS-----------
 \section{Technical Skills}
   \begin{itemize}[leftmargin=0in, label={}, itemsep=3pt, topsep=1pt, partopsep=0pt, parsep=0pt]
     \small{
-      {{SKILLS_SECTION}}
+      \item \textbf{Languages:} C++, Python, SQL, Bash
+      \item \textbf{Frameworks \& Tools:} FastAPI, Docker, PyTorch, Git, Linux
+      \item \textbf{Databases \& Cloud:} PostgreSQL, SQLite, AWS Services
     }
   \end{itemize}
 
 %-----------PROJECTS-----------
 \section{Projects}
   \resumeSubHeadingListStart
-    {{PROJECTS_SECTION}}
+
+    \resumeProjectHeading
+      {\textbf{Sample Project One} $|$ \emph{Python, FastAPI, Docker, PostgreSQL}}{}
+      \resumeItemListStart
+        \resumeItem{Architected a scalable backend system processing real-time asynchronous data requests.}
+        \resumeItem{Engineered optimized database indexing structures, reducing average query latency by 35\%.}
+      \resumeItemListEnd
+
+    \resumeProjectHeading
+      {\textbf{Sample Project Two} $|$ \emph{C++, Data Structures, Algorithms}}{}
+      \resumeItemListStart
+        \resumeItem{Designed a high-throughput routing engine utilizing graph search algorithms for resource allocation.}
+      \resumeItemListEnd
+
   \resumeSubHeadingListEnd
 
 %-----------CERTIFICATIONS-----------
 \section{Certifications}
   \resumeSubHeadingListStart
-    {{CERTIFICATIONS_SECTION}}
+    \resumeProjectHeading
+      {\textbf{Sample Cloud Certification}}{2025}
   \resumeSubHeadingListEnd
 
 %-----------ACHIEVEMENTS & LEADERSHIP-----------
 \section{Achievements \& Leadership}
   \resumeItemListStart
-    {{ACHIEVEMENTS_SECTION}}
+    \resumeItem{Solved 200+ algorithmic problem-solving challenges focused on graph optimization.}
+    \resumeItem{Core Organizer at Sample Student Organization managing community workshops.}
   \resumeItemListEnd
 
 \end{document}
