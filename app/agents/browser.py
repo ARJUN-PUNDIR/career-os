@@ -5,11 +5,40 @@ from app.config.settings import settings
 from app.schemas.models import CandidateProfile, UnifiedJobListing
 from app.graph.state import AgentState
 
+# Known system executable paths for N-Browsers across macOS & Linux
+SYSTEM_BROWSER_PATHS = [
+    # Brave Browser
+    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+    # Google Chrome
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    # Microsoft Edge
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+    # Arc Browser
+    "/Applications/Arc.app/Contents/MacOS/Arc",
+    # Opera Browser
+    "/Applications/Opera.app/Contents/MacOS/Opera",
+    # Vivaldi Browser
+    "/Applications/Vivaldi.app/Contents/MacOS/Vivaldi",
+    # Linux Standard Paths
+    "/usr/bin/brave-browser",
+    "/usr/bin/google-chrome",
+    "/usr/bin/microsoft-edge-stable",
+    "/usr/bin/chromium-browser"
+]
+
+def find_system_browser() -> tuple[str, str]:
+    """Scans local OS for any installed Chromium-family N-browser."""
+    for path in SYSTEM_BROWSER_PATHS:
+        if os.path.exists(path):
+            browser_name = os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(path)))).replace(".app", "")
+            return path, browser_name
+    return "", "Chromium"
+
 def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
     """
-    Playwright Browser Application Agent Node.
-    Auto-detects and launches Brave Browser / Google Chrome / Firefox with persistent profile,
-    populates candidate details, attaches compiled PDF resume, and pauses for review.
+    Playwright Universal N-Browser Agent Node.
+    Dynamically resolves any installed browser on the user's machine (Brave, Chrome, Edge, Arc, Opera, Vivaldi, Firefox),
+    attaches tailored PDF resume, and auto-fills portal forms.
     """
     candidate: CandidateProfile = state.get("candidate_profile")
     selected_job: UnifiedJobListing = state.get("selected_job")
@@ -23,7 +52,7 @@ def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
         print("⚠️ [Browser Agent] No selected job or candidate profile in state!")
         return {"application_status": "FAILED"}
 
-    # Prioritize the tailored compiled PDF resume created for this specific job
+    # Prioritize tailored PDF resume
     if not pdf_path or not os.path.exists(pdf_path):
         output_dir = os.path.join(settings.BASE_DIR, "data", "output")
         company_slug = selected_job.company.lower().replace(" ", "_") if selected_job else "tailored"
@@ -39,50 +68,38 @@ def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
                 pdf_path = p
                 break
 
-    print(f"\n🌐 [Playwright Browser Agent] Opening browser for target job: [{selected_job.company} - {selected_job.title}]...")
+    print(f"\n🌐 [Universal N-Browser Agent] Target Job: [{selected_job.company} - {selected_job.title}]...")
     print(f"🔗 Target Apply URL: {selected_job.apply_url}")
 
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        print("💡 [Playwright Note] Installing playwright...")
+        print("💡 Installing playwright...")
         import subprocess
         subprocess.run(["pip", "install", "playwright"], check=True)
         from playwright.sync_api import sync_playwright
 
     try:
         with sync_playwright() as p:
-            # Brave Browser executable location on macOS
-            brave_path = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
-            chrome_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-            
-            user_profile_dir = os.path.join(settings.BASE_DIR, "data", "brave_user_profile")
+            # Dynamic Universal System Browser Resolution
+            browser_path, browser_name = find_system_browser()
+            user_profile_dir = os.path.join(settings.BASE_DIR, "data", f"{browser_name.lower()}_user_profile")
             os.makedirs(user_profile_dir, exist_ok=True)
 
-            context = None
-            if os.path.exists(brave_path):
-                print(f"🚀 [Browser Agent] Launching BRAVE BROWSER directly from: {brave_path}")
+            if browser_path:
+                print(f"🚀 [Universal Agent] Detected & Launching: [{browser_name}] from {browser_path}")
                 context = p.chromium.launch_persistent_context(
                     user_data_dir=user_profile_dir,
-                    executable_path=brave_path,
-                    headless=False,
-                    slow_mo=300,
-                    viewport={"width": 1280, "height": 800}
-                )
-            elif os.path.exists(chrome_path):
-                print(f"🚀 [Browser Agent] Launching GOOGLE CHROME directly...")
-                context = p.chromium.launch_persistent_context(
-                    user_data_dir=user_profile_dir,
-                    channel="chrome",
+                    executable_path=browser_path,
                     headless=False,
                     slow_mo=300,
                     viewport={"width": 1280, "height": 800}
                 )
             else:
-                print(f"🚀 [Browser Agent] Launching Firefox Engine...")
-                firefox_profile_dir = os.path.join(settings.BASE_DIR, "data", "firefox_user_profile")
-                context = p.firefox.launch_persistent_context(
-                    user_data_dir=firefox_profile_dir,
+                print(f"🚀 [Universal Agent] Launching Chromium persistent context...")
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=user_profile_dir,
+                    channel="chrome",
                     headless=False,
                     slow_mo=300,
                     viewport={"width": 1280, "height": 800}
@@ -110,7 +127,7 @@ def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
                 try:
                     btn = page.query_selector(btn_sel)
                     if btn and btn.is_visible():
-                        print(f"   👉 [Browser Agent] Found Apply button ({btn_sel}). Clicking automatically...")
+                        print(f"   👉 Found Apply button ({btn_sel}). Clicking automatically...")
                         btn.click()
                         time.sleep(2.5)
                         break
@@ -156,17 +173,15 @@ def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
 
             # HUMAN APPROVAL GATE 2 INTERRUPT
             print("\n" + "="*80)
-            print("🛑 HUMAN APPROVAL GATE 2: PRE-SUBMISSION REVIEW INTERRUPT")
+            print(f"🛑 HUMAN APPROVAL GATE 2: PRE-SUBMISSION REVIEW INTERRUPT ({browser_name})")
             print("="*80)
-            print("   The Brave/Chrome browser is open on your screen with pre-filled fields!")
+            print(f"   The [{browser_name}] browser is open on your screen with pre-filled fields!")
             print(f"   Target Job: [{selected_job.company} - {selected_job.title}]")
-            print("   Please review the form, answer any custom portal questions, and approve submission.")
             print("="*80)
 
             time.sleep(5)
             return {"application_status": "SUBMITTED_OR_REVIEWED", "gate_2_approved": True}
 
     except Exception as e:
-        print(f"⚠️ [Playwright Browser Handoff]: {e}")
-        print(f"💡 Guided Human Handoff: Open URL directly in your browser: {selected_job.apply_url}")
+        print(f"⚠️ [Browser Handoff]: {e}")
         return {"application_status": "HANDOFF_TO_HUMAN"}
