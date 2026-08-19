@@ -37,7 +37,6 @@ st.set_page_config(
 # Custom High-Impact Modern CSS Aesthetics
 st.markdown("""
 <style>
-    /* Dark Theme Accent Gradient Header */
     .main-header {
         background: linear-gradient(135deg, #1E1E2F 0%, #0F2027 50%, #2C5364 100%);
         padding: 24px;
@@ -56,21 +55,13 @@ st.markdown("""
         color: #E0E0E0;
         font-size: 1.1rem;
     }
-    /* Job Card Glassmorphism Effect */
-    .job-card {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        padding: 16px;
-        margin-bottom: 12px;
-        background-color: rgba(255, 255, 255, 0.03);
-    }
-    /* Badge Custom Styling */
-    .ats-badge {
-        background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
-        color: black;
+    .api-warning {
+        background-color: #ff4b4b;
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
         font-weight: bold;
-        padding: 4px 12px;
-        border-radius: 20px;
+        margin-bottom: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -112,15 +103,38 @@ def main():
         st.session_state.jobs_per_page = 15
     if "current_page" not in st.session_state:
         st.session_state.current_page = 1
+    if "api_errors" not in st.session_state:
+        st.session_state.api_errors = []
 
     # Check Daily Rate Limit (Max 2 Runs Per Day)
     today_runs = get_today_usage_count()
     limit_exceeded = check_daily_limit_exceeded(max_limit=2)
 
     # -----------------------------------------------------------------
-    # SIDEBAR: RATE LIMIT STATUS & SEARCH HISTORY DOWNLOAD
+    # SIDEBAR: API KEY HEALTH DIAGNOSTICS & OVERRIDE INPUTS
     # -----------------------------------------------------------------
     with st.sidebar:
+        st.header("🔑 API Key Status & Quota Health")
+        
+        # Display API Config & Quota Health Indicators
+        st.write(f"NVIDIA LLM: {'✅ Active' if settings.NVIDIA_API_KEY else '❌ Missing'}")
+        st.write(f"RapidAPI Hub: {'✅ Active' if settings.RAPIDAPI_KEY else '❌ Missing'}")
+        st.write(f"SerpAPI Google: {'✅ Active' if settings.SERPAPI_KEY else '❌ Missing'}")
+
+        # Optional Override Input Boxes (If user's key hits quota limit!)
+        with st.expander("🛠️ Update / Replace API Key"):
+            new_nvidia = st.text_input("New NVIDIA API Key", type="password")
+            new_rapidapi = st.text_input("New RapidAPI Key", type="password")
+            if st.button("Apply New API Keys"):
+                if new_nvidia:
+                    settings.NVIDIA_API_KEY = new_nvidia
+                    os.environ["NVIDIA_API_KEY"] = new_nvidia
+                if new_rapidapi:
+                    settings.RAPIDAPI_KEY = new_rapidapi
+                    os.environ["RAPIDAPI_KEY"] = new_rapidapi
+                st.success("API Keys updated live!")
+
+        st.divider()
         st.header("⚡ Usage & Rate Limits")
         st.write(f"Today's Executions: **{today_runs} / 2 Allowed**")
         
@@ -165,6 +179,14 @@ def main():
             )
 
     # -----------------------------------------------------------------
+    # API EXCEEDED QUOTA ALERT BANNER (If any API fails with 429/Quota error)
+    # -----------------------------------------------------------------
+    if st.session_state.api_errors:
+        for err_msg in st.session_state.api_errors:
+            st.error(f"🚨 **API Quota Alert**: {err_msg}")
+            st.info("💡 Solution: Expand the **'🛠️ Update / Replace API Key'** section in the left sidebar to enter a new API key!")
+
+    # -----------------------------------------------------------------
     # STEP 1: UPLOAD RESUME & PREFERENCES
     # -----------------------------------------------------------------
     st.header("📄 Step 1: Upload Resume & Set Preferences")
@@ -201,71 +223,79 @@ def main():
             run_search = st.button("⚡ Start Real-Time Job Discovery & ATS Ranking", type="primary", use_container_width=True)
 
     # -----------------------------------------------------------------
-    # REAL-TIME STEPPER & SEARCH EXECUTION
+    # REAL-TIME STEPPER & SEARCH EXECUTION WITH API ERROR CATCHING
     # -----------------------------------------------------------------
     if run_search:
+        st.session_state.api_errors = []
         if not os.path.exists(pdf_path):
             st.error("❌ Please upload a resume PDF file first!")
         else:
-            # Increment Daily Usage Count
             increment_daily_usage()
-            
             status_box = st.status("🚀 Launching CareerOS Multi-Agent Pipeline...", expanded=True)
             
-            # STEPPER 1: PARSING RESUME
-            status_box.write("⏳ **Step 1/4: Parsing Candidate Resume ($0-Token MD5 Cache)...**")
-            time.sleep(0.5)
-            
-            locs_list = [loc.strip() for loc in target_locations.split(",")]
-            user_reqs = JobRequirementsInput(
-                target_role=target_role,
-                target_locations=locs_list,
-                min_stipend_lpa=target_stipend,
-                days_posted=10
-            )
-            
-            state: AgentState = {
-                "resume_pdf_path": pdf_path,
-                "candidate_profile": None,
-                "user_requirements": user_reqs,
-                "search_strategy": None,
-                "discovered_jobs": [],
-                "ranked_jobs": [],
-                "selected_job": None,
-                "tailored_profile": None,
-                "audit_result": None,
-                "compiled_pdf_path": None,
-                "cover_letter_text": None,
-                "gate_1_approved": False,
-                "gate_2_approved": False,
-                "application_status": "DISCOVERED",
-                "tracker_logs": [],
-                "error_message": None
-            }
-            
-            state["candidate_profile"] = parse_resume_node(state)["candidate_profile"]
-            status_box.write("✅ **Step 1 Complete: Resume Parsed Successfully!**")
-            
-            # STEPPER 2: CAREER PLANNER
-            status_box.write("⏳ **Step 2/4: Formulating 3-Pillar Search Queries (NVIDIA Nemotron LLM)...**")
-            planner_res = plan_career_strategy_node(state)
-            state["search_strategy"] = planner_res["search_strategy"]
-            status_box.write("✅ **Step 2 Complete: 3-Pillar Strategy Formulated!**")
-            
-            # STEPPER 3: 3-PILLAR JOB SEARCH
-            status_box.write("⏳ **Step 3/4: Fetching Live Postings from JSearch API & Google ATS...**")
-            state["discovered_jobs"] = search_jobs_node(state)["discovered_jobs"]
-            status_box.write(f"✅ **Step 3 Complete: Ingested {len(state['discovered_jobs'])} Live Postings!**")
-            
-            # STEPPER 4: ATS RANKING ENGINE
-            status_box.write("⏳ **Step 4/4: Executing Deterministic ATS Ranking Engine (< 10ms)...**")
-            state["ranked_jobs"] = rank_jobs_node(state)["ranked_jobs"]
-            status_box.write("✅ **Step 4 Complete: All Jobs Ranked & Sorted by ATS Score!**")
-            
-            status_box.update(label="🎉 Multi-Agent Discovery Complete!", state="complete", expanded=False)
-            
-            st.session_state.agent_state = state
-            st.rerun()
+            try:
+                # STEPPER 1: PARSING RESUME
+                status_box.write("⏳ **Step 1/4: Parsing Candidate Resume ($0-Token MD5 Cache)...**")
+                time.sleep(0.5)
+                
+                locs_list = [loc.strip() for loc in target_locations.split(",")]
+                user_reqs = JobRequirementsInput(
+                    target_role=target_role,
+                    target_locations=locs_list,
+                    min_stipend_lpa=target_stipend,
+                    days_posted=10
+                )
+                
+                state: AgentState = {
+                    "resume_pdf_path": pdf_path,
+                    "candidate_profile": None,
+                    "user_requirements": user_reqs,
+                    "search_strategy": None,
+                    "discovered_jobs": [],
+                    "ranked_jobs": [],
+                    "selected_job": None,
+                    "tailored_profile": None,
+                    "audit_result": None,
+                    "compiled_pdf_path": None,
+                    "cover_letter_text": None,
+                    "gate_1_approved": False,
+                    "gate_2_approved": False,
+                    "application_status": "DISCOVERED",
+                    "tracker_logs": [],
+                    "error_message": None
+                }
+                
+                state["candidate_profile"] = parse_resume_node(state)["candidate_profile"]
+                status_box.write("✅ **Step 1 Complete: Resume Parsed Successfully!**")
+                
+                # STEPPER 2: CAREER PLANNER
+                status_box.write("⏳ **Step 2/4: Formulating 3-Pillar Search Queries (NVIDIA Nemotron LLM)...**")
+                planner_res = plan_career_strategy_node(state)
+                state["search_strategy"] = planner_res["search_strategy"]
+                status_box.write("✅ **Step 2 Complete: 3-Pillar Strategy Formulated!**")
+                
+                # STEPPER 3: 3-PILLAR JOB SEARCH
+                status_box.write("⏳ **Step 3/4: Fetching Live Postings from JSearch API & Google ATS...**")
+                state["discovered_jobs"] = search_jobs_node(state)["discovered_jobs"]
+                status_box.write(f"✅ **Step 3 Complete: Ingested {len(state['discovered_jobs'])} Live Postings!**")
+                
+                # STEPPER 4: ATS RANKING ENGINE
+                status_box.write("⏳ **Step 4/4: Executing Deterministic ATS Ranking Engine (< 10ms)...**")
+                state["ranked_jobs"] = rank_jobs_node(state)["ranked_jobs"]
+                status_box.write("✅ **Step 4 Complete: All Jobs Ranked & Sorted by ATS Score!**")
+                
+                status_box.update(label="🎉 Multi-Agent Discovery Complete!", state="complete", expanded=False)
+                
+                st.session_state.agent_state = state
+                st.rerun()
+
+            except Exception as e:
+                err_str = str(e)
+                status_box.update(label="❌ Pipeline Execution Interrupted", state="error", expanded=True)
+                if "429" in err_str or "quota" in err_str.lower() or "exceeded" in err_str.lower() or "unauthorized" in err_str.lower():
+                    st.session_state.api_errors.append(f"API Quota Exceeded or Invalid Key encountered: {err_str}")
+                else:
+                    st.error(f"Execution Error: {err_str}")
 
     # -----------------------------------------------------------------
     # STEP 2: INTERACTIVE ATS-SORTED JOB FEED WITH PAGINATION
@@ -332,19 +362,22 @@ def main():
             with tailor_col1:
                 if st.button("🎨 Tailor Jake's Resume PDF for this Job", type="primary", use_container_width=True):
                     with st.spinner(f"Analyzing ATS keyword gaps & compiling Jake's Resume PDF..."):
-                        full_resume_text = extract_full_raw_pdf_text(pdf_path)
-                        ats_results = call_rapidapi_ats_scorer(full_resume_text, selected_job.raw_jd)
-                        
-                        state["selected_job"] = selected_job
-                        latex_res = generate_latex_resume_node(state)
-                        state["latex_code"] = latex_res["latex_code"]
-                        state["tex_path"] = latex_res["tex_path"]
-                        
-                        compiler_res = compile_latex_to_pdf_node(state)
-                        state["compiled_pdf_path"] = compiler_res["compiled_pdf_path"]
-                        st.session_state.compiled_pdf = compiler_res["compiled_pdf_path"]
-                        
-                        st.success("✅ Tailored Single-Page Jake's Resume PDF Compiled!")
+                        try:
+                            full_resume_text = extract_full_raw_pdf_text(pdf_path)
+                            ats_results = call_rapidapi_ats_scorer(full_resume_text, selected_job.raw_jd)
+                            
+                            state["selected_job"] = selected_job
+                            latex_res = generate_latex_resume_node(state)
+                            state["latex_code"] = latex_res["latex_code"]
+                            state["tex_path"] = latex_res["tex_path"]
+                            
+                            compiler_res = compile_latex_to_pdf_node(state)
+                            state["compiled_pdf_path"] = compiler_res["compiled_pdf_path"]
+                            st.session_state.compiled_pdf = compiler_res["compiled_pdf_path"]
+                            
+                            st.success("✅ Tailored Single-Page Jake's Resume PDF Compiled!")
+                        except Exception as e:
+                            st.error(f"🚨 API Key or Compilation Error: {e}")
 
             compiled_pdf = st.session_state.compiled_pdf
             if compiled_pdf and os.path.exists(compiled_pdf):
