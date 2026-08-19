@@ -27,13 +27,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN playwright install firefox
 RUN playwright install-deps firefox
 
-# Copy application source code
+# Copy application source code & main entrypoint
 COPY app ./app
-COPY templates ./templates
 COPY main.py .
 
 # Create data directories
-RUN mkdir -p data/uploads data/output data/chrome_user_profile data/firefox_user_profile
+RUN mkdir -p data/uploads data/output data/chrome_user_profile data/firefox_user_profile data/brave_user_profile
 
 # Expose Streamlit default port 8501
 EXPOSE 8501
