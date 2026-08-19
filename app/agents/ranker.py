@@ -35,7 +35,6 @@ def score_job_fit_python(candidate: CandidateProfile, job: UnifiedJobListing) ->
     # -----------------------------------------------------------------
     # HARD DISQUALIFIER 1: Foreign Location Mismatch (US/UK/EU vs India Target)
     # -----------------------------------------------------------------
-    # If candidate is in India and target is India/NCR/Remote India
     is_india_candidate = any(i in candidate_loc for i in ["india", "gurugram", "noida", "delhi", "haryana"])
     if is_india_candidate:
         us_foreign_indicators = ["united states", "usa", "utah", "new york", "san francisco", "california", "texas", "us remote", "uk remote", "europe"]
@@ -99,30 +98,27 @@ def export_ranked_jobs_to_markdown(candidate: CandidateProfile, ranked_jobs: Lis
     from datetime import datetime
     
     qualified_jobs = [j for j in ranked_jobs if j.ats_score > 0.0]
-    
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    md = f"""# 📊 CAREEROS ATS RANKED JOB FEED REPORT
-**Generated On**: {timestamp}  
-**Candidate Name**: {candidate.full_name if candidate else 'Candidate'}  
-**Total Jobs Scanned**: {len(ranked_jobs)} | **Qualified Fresher Jobs**: **{len(qualified_jobs)}**
-
----
-
-## 🏆 Qualified ATS Sorted Jobs Feed (Highest Match to Lowest)
-
-"""
+    cand_name = candidate.full_name if candidate else 'Candidate'
+    
+    md = f"# 📊 CAREEROS ATS RANKED JOB FEED REPORT\n"
+    md += f"**Generated On**: {timestamp}  \n"
+    md += f"**Candidate Name**: {cand_name}  \n"
+    md += f"**Total Jobs Scanned**: {len(ranked_jobs)} | **Qualified Fresher Jobs**: **{len(qualified_jobs)}**\n\n"
+    md += "---\n\n## 🏆 Qualified ATS Sorted Jobs Feed (Highest Match to Lowest)\n\n"
+    
     for idx, job in enumerate(qualified_jobs, 1):
-        md += f"""### [{idx}] ATS Match Score: {job.ats_score}% | {job.company} - {job.title}
-* **Source Platform**: `{job.source_platform}`
-* **Location**: {job.location}
-* **Salary / Stipend**: {job.salary_range}
-* **Missing Skills**: `{', '.join(job.missing_skills) if job.missing_skills else 'None'}`
-* **Apply Link**: [Click Here to Apply]({job.apply_url})
-* **Job Description Snippet**:
-  > {job.raw_jd[:300].replace('\n', ' ')}...
-
----
-"""
+        missing_str = ", ".join(job.missing_skills) if job.missing_skills else "None"
+        jd_snippet = job.raw_jd[:300].replace("\n", " ")
+        
+        md += f"### [{idx}] ATS Match Score: {job.ats_score}% | {job.company} - {job.title}\n"
+        md += f"* **Source Platform**: `{job.source_platform}`\n"
+        md += f"* **Location**: {job.location}\n"
+        md += f"* **Salary / Stipend**: {job.salary_range}\n"
+        md += f"* **Missing Skills**: `{missing_str}`\n"
+        md += f"* **Apply Link**: [Click Here to Apply]({job.apply_url})\n"
+        md += f"* **Job Description Snippet**:\n  > {jd_snippet}...\n\n---\n"
+        
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(md)
