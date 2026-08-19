@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 from app.config.settings import settings
 from app.schemas.models import UnifiedJobListing
@@ -11,7 +12,7 @@ def get_db_connection():
     return conn
 
 def init_db():
-    """Initializes the SQLite tables for jobs and application tracking."""
+    """Initializes the SQLite tables for jobs, application tracking, and usage rate-limiting."""
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -54,10 +55,43 @@ def init_db():
         parsed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
+    # Table for daily rate-limiting tracking
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS daily_usage_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_session TEXT DEFAULT 'default_user',
+        run_date TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
     
     conn.commit()
     conn.close()
     print(f"💾 [Database] SQLite initialized at: {settings.DB_PATH}")
+
+def get_today_usage_count(user_session: str = "default_user") -> int:
+    """Returns total search runs triggered today by the user."""
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as count FROM daily_usage_log WHERE user_session = ? AND run_date = ?", (user_session, today_str))
+    row = cursor.fetchone()
+    conn.close()
+    return row["count"] if row else 0
+
+def increment_daily_usage(user_session: str = "default_user"):
+    """Logs a new pipeline execution for today."""
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO daily_usage_log (user_session, run_date) VALUES (?, ?)", (user_session, today_str))
+    conn.commit()
+    conn.close()
+
+def check_daily_limit_exceeded(max_limit: int = 2, user_session: str = "default_user") -> bool:
+    """Returns True if today's usage exceeds max_limit."""
+    return get_today_usage_count(user_session) >= max_limit
 
 def get_cached_resume_profile(pdf_hash: str) -> Optional[Dict[str, Any]]:
     """Returns cached CandidateProfile dict if pdf_hash exists in SQLite DB."""

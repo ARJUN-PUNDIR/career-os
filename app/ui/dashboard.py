@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import pdfplumber
 import streamlit as st
+from datetime import datetime
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
@@ -18,15 +19,61 @@ from app.agents.compiler import compile_latex_to_pdf_node
 from app.agents.browser import fill_and_apply_job_node
 from app.schemas.models import JobRequirementsInput, UnifiedJobListing
 from app.graph.state import AgentState
-from app.tracker.db import get_saved_jobs
+from app.tracker.db import (
+    get_saved_jobs,
+    get_today_usage_count,
+    increment_daily_usage,
+    check_daily_limit_exceeded
+)
 
-# Page Configuration
+# Page Configuration & Modern Theme Styling
 st.set_page_config(
     page_title="CareerOS - Autonomous Job Search & Application Platform",
     page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Custom High-Impact Modern CSS Aesthetics
+st.markdown("""
+<style>
+    /* Dark Theme Accent Gradient Header */
+    .main-header {
+        background: linear-gradient(135deg, #1E1E2F 0%, #0F2027 50%, #2C5364 100%);
+        padding: 24px;
+        border-radius: 12px;
+        color: white;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .main-header h1 {
+        color: #00F2FE;
+        font-size: 2.8rem;
+        margin-bottom: 0px;
+    }
+    .main-header p {
+        color: #E0E0E0;
+        font-size: 1.1rem;
+    }
+    /* Job Card Glassmorphism Effect */
+    .job-card {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 12px;
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+    /* Badge Custom Styling */
+    .ats-badge {
+        background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+        color: black;
+        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 def extract_full_raw_pdf_text(pdf_path: str) -> str:
     full_text = ""
@@ -37,16 +84,22 @@ def extract_full_raw_pdf_text(pdf_path: str) -> str:
                 full_text += t + "\n"
     return full_text.strip()
 
+def convert_jobs_to_csv(jobs_list: list) -> str:
+    df = pd.DataFrame(jobs_list)
+    return df.to_csv(index=False)
+
 def main():
     # -----------------------------------------------------------------
-    # HERO HEADER & CAPTION
+    # HERO MODERN STYLED HEADER
     # -----------------------------------------------------------------
-    st.markdown("<h1 style='text-align: center;'>🚀 CareerOS</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; color: #555;'>Autonomous Job Search & Application Platform</h3>", unsafe_allow_html=True)
-    st.caption("<div style='text-align: center;'>Powered by LangGraph • NVIDIA Nemotron-3 LLM • Playwright Persistent Browser • RapidAPI Hub</div>", unsafe_allow_html=True)
-    st.divider()
+    st.markdown("""
+    <div class="main-header">
+        <h1>🚀 CareerOS Platform</h1>
+        <p>Autonomous Multi-Agent Job Discovery, ATS Ranking & Browser Application Engine</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Initialize Session State Variables
+    # Initialize Session State
     if "agent_state" not in st.session_state:
         st.session_state.agent_state = None
     if "selected_job" not in st.session_state:
@@ -60,36 +113,59 @@ def main():
     if "current_page" not in st.session_state:
         st.session_state.current_page = 1
 
+    # Check Daily Rate Limit (Max 2 Runs Per Day)
+    today_runs = get_today_usage_count()
+    limit_exceeded = check_daily_limit_exceeded(max_limit=2)
+
     # -----------------------------------------------------------------
-    # SIDEBAR: PERSISTENT JOB DRAWER & QUICK NAVIGATION
+    # SIDEBAR: RATE LIMIT STATUS & SEARCH HISTORY DOWNLOAD
     # -----------------------------------------------------------------
     with st.sidebar:
+        st.header("⚡ Usage & Rate Limits")
+        st.write(f"Today's Executions: **{today_runs} / 2 Allowed**")
+        
+        if limit_exceeded:
+            st.error("🔒 **Daily Limit Reached (2/2 Runs)**")
+            st.caption("CareerOS is in testing phase. Daily runs are capped at 2 to protect API credit quotas.")
+        else:
+            st.success(f"✅ {2 - today_runs} Executions Remaining Today")
+
+        st.divider()
         st.header("📂 Discovered Jobs Drawer")
         state = st.session_state.agent_state
         
         if state and state.get("ranked_jobs"):
             ranked_list = state["ranked_jobs"]
             qualified = [j for j in ranked_list if j.ats_score > 0.0]
-            st.success(f"Discovered {len(qualified)} Total Jobs")
+            st.success(f"Feed Loaded: {len(qualified)} Jobs")
             
-            st.subheader("Quick Jump to Any Job")
+            st.subheader("Quick Jump Drawer")
             job_titles = [f"#{idx+1} [{j.ats_score}%] {j.company} - {j.title[:25]}" for idx, j in enumerate(qualified)]
-            selected_drawer = st.selectbox("Select Job from Drawer", options=job_titles, index=0)
+            selected_drawer = st.selectbox("Jump to Job", options=job_titles, index=0)
             
-            if st.button("📌 Jump to Selected Job Details", use_container_width=True):
+            if st.button("📌 Select Job from Drawer", use_container_width=True):
                 selected_idx = int(selected_drawer.split(" ")[0].replace("#", "")) - 1
                 st.session_state.selected_job = qualified[selected_idx]
-                st.info(f"Targeting: {qualified[selected_idx].company}")
+                st.info(f"Selected: {qualified[selected_idx].company}")
         else:
             st.info("Run search to populate jobs drawer.")
 
         st.divider()
-        st.header("🔐 Browser Profile & Logins")
-        st.write("Firefox Persistent Profile: `data/firefox_user_profile`")
-        st.caption("Logins to Shine, Internshala, & LinkedIn stay saved permanently across sessions.")
+        st.header("📜 Search History & Export")
+        db_jobs = get_saved_jobs()
+        if db_jobs:
+            st.write(f"Total Stored Jobs in DB: **{len(db_jobs)}**")
+            csv_data = convert_jobs_to_csv(db_jobs)
+            st.download_button(
+                label="⬇️ Download Job History (CSV)",
+                data=csv_data,
+                file_name=f"career_os_job_history_{datetime.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
 
     # -----------------------------------------------------------------
-    # STEP 1: RESUME UPLOAD & TARGET REQUIREMENTS
+    # STEP 1: UPLOAD RESUME & PREFERENCES
     # -----------------------------------------------------------------
     st.header("📄 Step 1: Upload Resume & Set Preferences")
     
@@ -106,7 +182,7 @@ def main():
             pdf_path = user_pdf_path
             st.success(f"✅ Active Resume: {uploaded_file.name}")
         elif os.path.exists(pdf_path):
-            st.info("📄 Active Resume: sample_resume.pdf")
+            st.info("📄 Active Resume Loaded: sample_resume.pdf")
 
     with col2:
         target_role = st.text_input("Target Role", value="AI Intern / GenAI Engineer")
@@ -115,18 +191,25 @@ def main():
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # SEARCH TRIGGER BUTTON
+    # RATE-LIMIT SAFEGUARD SEARCH TRIGGER
     search_col1, search_col2, search_col3 = st.columns([1, 2, 1])
     with search_col2:
-        run_search = st.button("⚡ Start Real-Time Job Discovery & ATS Ranking", type="primary", use_container_width=True)
+        if limit_exceeded:
+            st.warning("⚠️ **Testing Phase Notice**: You have reached the maximum 2 daily runs allowed during the testing phase to prevent API overuse. Please return tomorrow!")
+            run_search = False
+        else:
+            run_search = st.button("⚡ Start Real-Time Job Discovery & ATS Ranking", type="primary", use_container_width=True)
 
     # -----------------------------------------------------------------
-    # REAL-TIME ANIMATED STEPPER & LIVE STREAMING SEARCH
+    # REAL-TIME STEPPER & SEARCH EXECUTION
     # -----------------------------------------------------------------
     if run_search:
         if not os.path.exists(pdf_path):
             st.error("❌ Please upload a resume PDF file first!")
         else:
+            # Increment Daily Usage Count
+            increment_daily_usage()
+            
             status_box = st.status("🚀 Launching CareerOS Multi-Agent Pipeline...", expanded=True)
             
             # STEPPER 1: PARSING RESUME
@@ -169,8 +252,8 @@ def main():
             state["search_strategy"] = planner_res["search_strategy"]
             status_box.write("✅ **Step 2 Complete: 3-Pillar Strategy Formulated!**")
             
-            # STEPPER 3: 3-PILLAR JOB SEARCH & LIVE STREAMING
-            status_box.write("⏳ **Step 3/4: Fetching Live Postings from JSearch API & Google ATS Indexing...**")
+            # STEPPER 3: 3-PILLAR JOB SEARCH
+            status_box.write("⏳ **Step 3/4: Fetching Live Postings from JSearch API & Google ATS...**")
             state["discovered_jobs"] = search_jobs_node(state)["discovered_jobs"]
             status_box.write(f"✅ **Step 3 Complete: Ingested {len(state['discovered_jobs'])} Live Postings!**")
             
@@ -236,7 +319,7 @@ def main():
                     st.rerun()
 
     # -----------------------------------------------------------------
-    # STEP 3: TAILOR RESUME PDF & PLAYWRIGHT APPLICATION AGENT
+    # STEP 3: TAILOR RESUME PDF & BROWSER APPLICATION AGENT
     # -----------------------------------------------------------------
     selected_job = st.session_state.selected_job
     if selected_job:
@@ -275,21 +358,15 @@ def main():
                     )
 
             st.subheader("🌐 Playwright Persistent Browser Agent")
-            
-            # Display Persistent Login Notification Banner
-            st.info("💡 **Persistent Login Session**: Firefox opens with your saved logins (`data/firefox_user_profile`). If a portal requires login (Shine, Internshala, LinkedIn), please sign in once in the opened Firefox window and Playwright will complete the form auto-fill!")
+            st.info("💡 **Persistent Login Session**: Firefox/Brave opens with saved logins (`data/brave_user_profile`). Log in once to Shine, Internshala, or LinkedIn and Playwright auto-fills the rest!")
 
-            if st.button("🚀 Open Firefox & Apply Live", type="primary", use_container_width=True):
-                with st.spinner("Opening persistent Firefox window, detecting portal fields, and attaching PDF resume..."):
+            if st.button("🚀 Open Browser & Apply Live", type="primary", use_container_width=True):
+                with st.spinner("Opening persistent browser window, detecting portal fields, and attaching PDF resume..."):
                     state["selected_job"] = selected_job
                     state["compiled_pdf_path"] = compiled_pdf
                     res = fill_and_apply_job_node(state)
                     st.session_state.application_completed = True
-                    
-                    if res.get("application_status") == "LOGIN_REQUIRED":
-                        st.warning("⚠️ **Action Required**: Portal requires sign-in! Please sign in in the opened Firefox browser window.")
-                    else:
-                        st.success(f"🎉 Application Processed for [{selected_job.company}]!")
+                    st.success(f"🎉 Application Processed for [{selected_job.company}]!")
                     st.rerun()
 
         # -----------------------------------------------------------------
