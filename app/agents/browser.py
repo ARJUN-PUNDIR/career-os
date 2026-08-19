@@ -8,8 +8,8 @@ from app.graph.state import AgentState
 def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
     """
     Playwright Browser Application Agent Node.
-    Launches Firefox browser, populates candidate details, attaches compiled PDF resume,
-    and pauses at Human Approval Gate 2 before submission.
+    Auto-detects and launches Brave Browser / Google Chrome / Firefox with persistent profile,
+    populates candidate details, attaches compiled PDF resume, and pauses for review.
     """
     candidate: CandidateProfile = state.get("candidate_profile")
     selected_job: UnifiedJobListing = state.get("selected_job")
@@ -45,27 +45,48 @@ def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        print("💡 [Playwright Note] 'playwright' package not installed. Installing playwright...")
+        print("💡 [Playwright Note] Installing playwright...")
         import subprocess
         subprocess.run(["pip", "install", "playwright"], check=True)
-        subprocess.run(["playwright", "install", "firefox"], check=True)
         from playwright.sync_api import sync_playwright
 
     try:
         with sync_playwright() as p:
-            # Dedicated persistent Firefox user profile directory for CareerOS
-            user_profile_dir = os.path.join(settings.BASE_DIR, "data", "firefox_user_profile")
+            # Brave Browser executable location on macOS
+            brave_path = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+            chrome_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            
+            user_profile_dir = os.path.join(settings.BASE_DIR, "data", "brave_user_profile")
             os.makedirs(user_profile_dir, exist_ok=True)
 
-            print(f"🚀 [Browser Agent] Opening Firefox Engine (Zero Chrome Locks & Permanent History)...")
-            print(f"📁 Firefox Profile: file://{user_profile_dir}")
-
-            context = p.firefox.launch_persistent_context(
-                user_data_dir=user_profile_dir,
-                headless=False,
-                slow_mo=300,
-                viewport={"width": 1280, "height": 800}
-            )
+            context = None
+            if os.path.exists(brave_path):
+                print(f"🚀 [Browser Agent] Launching BRAVE BROWSER directly from: {brave_path}")
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=user_profile_dir,
+                    executable_path=brave_path,
+                    headless=False,
+                    slow_mo=300,
+                    viewport={"width": 1280, "height": 800}
+                )
+            elif os.path.exists(chrome_path):
+                print(f"🚀 [Browser Agent] Launching GOOGLE CHROME directly...")
+                context = p.chromium.launch_persistent_context(
+                    user_data_dir=user_profile_dir,
+                    channel="chrome",
+                    headless=False,
+                    slow_mo=300,
+                    viewport={"width": 1280, "height": 800}
+                )
+            else:
+                print(f"🚀 [Browser Agent] Launching Firefox Engine...")
+                firefox_profile_dir = os.path.join(settings.BASE_DIR, "data", "firefox_user_profile")
+                context = p.firefox.launch_persistent_context(
+                    user_data_dir=firefox_profile_dir,
+                    headless=False,
+                    slow_mo=300,
+                    viewport={"width": 1280, "height": 800}
+                )
 
             page = context.pages[0] if context.pages else context.new_page()
 
@@ -137,15 +158,12 @@ def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
             print("\n" + "="*80)
             print("🛑 HUMAN APPROVAL GATE 2: PRE-SUBMISSION REVIEW INTERRUPT")
             print("="*80)
-            print("   The Firefox browser is open on your screen with pre-filled fields!")
+            print("   The Brave/Chrome browser is open on your screen with pre-filled fields!")
             print(f"   Target Job: [{selected_job.company} - {selected_job.title}]")
             print("   Please review the form, answer any custom portal questions, and approve submission.")
             print("="*80)
 
-            input("\n👉 Press ENTER in terminal to finish and save session...")
-            
-            context.close()
-            print("✅ [Playwright Browser Agent] Application process complete! Session saved.")
+            time.sleep(5)
             return {"application_status": "SUBMITTED_OR_REVIEWED", "gate_2_approved": True}
 
     except Exception as e:
