@@ -47,12 +47,12 @@ def run_master_career_os_pipeline():
     log_file = os.path.join(settings.BASE_DIR, "data", "full_pipeline_run.log")
     sys.stdout = LoggerTee(log_file)
 
-    pdf_path = os.path.join(settings.UPLOADS_DIR, "arjun_resume.pdf")
+    pdf_path = os.path.join(settings.UPLOADS_DIR, "sample_resume.pdf")
     if not os.path.exists(pdf_path):
         print(f"\n❌ Error: Resume PDF not found at path:")
         print(f"   {pdf_path}")
         print(f"\n💡 Please copy your resume PDF file to this location:")
-        print(f"   /Users/arjunsinghpundir/Desktop/career-os/data/uploads/arjun_resume.pdf\n")
+        print(f"   {pdf_path}\n")
         return
 
     print("\n" + "="*85)

@@ -29,10 +29,10 @@ def fill_and_apply_job_node(state: AgentState) -> Dict[str, Any]:
         company_slug = selected_job.company.lower().replace(" ", "_") if selected_job else "tailored"
         
         candidates_pdfs = [
-            os.path.join(output_dir, f"arjun_master_jake_resume_{company_slug}.pdf"),
-            os.path.join(output_dir, "arjun_master_jake_resume_digitalxnode.pdf"),
-            os.path.join(output_dir, "arjun_jakes_resume_digitalxnode.pdf"),
-            os.path.join(settings.UPLOADS_DIR, "arjun_resume.pdf")
+            os.path.join(output_dir, f"sample_jake_resume_{company_slug}.pdf"),
+            os.path.join(output_dir, "sample_jake_resume_digitalxnode.pdf"),
+            os.path.join(settings.UPLOADS_DIR, "candidate_resume.pdf"),
+            os.path.join(settings.UPLOADS_DIR, "sample_resume.pdf")
         ]
         for p in candidates_pdfs:
             if os.path.exists(p):

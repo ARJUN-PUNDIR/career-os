@@ -76,17 +76,19 @@ def main():
     st.header("📄 Step 1: Upload Candidate Resume")
     
     upload_col1, upload_col2, upload_col3 = st.columns([1, 2, 1])
-    pdf_path = os.path.join(settings.UPLOADS_DIR, "arjun_resume.pdf")
+    pdf_path = os.path.join(settings.UPLOADS_DIR, "sample_resume.pdf")
     os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
     
     with upload_col2:
         uploaded_file = st.file_uploader("Upload your Resume (PDF format)", type=["pdf"], key="main_resume_uploader")
         if uploaded_file:
-            with open(pdf_path, "wb") as f:
+            user_pdf_path = os.path.join(settings.UPLOADS_DIR, "candidate_resume.pdf")
+            with open(user_pdf_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
+            pdf_path = user_pdf_path
             st.success(f"✅ Resume Uploaded Successfully: {uploaded_file.name}")
         elif os.path.exists(pdf_path):
-            st.info("📄 Active Resume Loaded: arjun_resume.pdf")
+            st.info("📄 Active Resume Loaded: sample_resume.pdf")
 
     st.divider()
 

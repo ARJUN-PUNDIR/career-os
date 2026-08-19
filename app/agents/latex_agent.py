@@ -90,7 +90,7 @@ def generate_latex_resume_node(state: AgentState) -> Dict[str, Any]:
     output_dir = os.path.join(settings.BASE_DIR, "data", "output")
     os.makedirs(output_dir, exist_ok=True)
     company_slug = selected_job.company.lower().replace(" ", "_")
-    tex_path = os.path.join(output_dir, f"arjun_master_jake_resume_{company_slug}.tex")
+    tex_path = os.path.join(output_dir, f"sample_jake_resume_{company_slug}.tex")
     
     with open(tex_path, "w", encoding="utf-8") as f:
         f.write(latex_code)
