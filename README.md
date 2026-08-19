@@ -220,17 +220,22 @@ SERPAPI_KEY=your_serpapi_key
 FIRECRAWL_API_KEY=your_firecrawl_api_key
 ```
 
-### 3. Execution
-Run the master pipeline CLI:
+## ☁️ AWS Cloud Deployment
+
+CareerOS includes production Docker containerization and AWS Cloud deployment support:
+
+- **`Dockerfile`**: Containerizes Python 3.10+, Playwright Firefox, dependencies, and Streamlit UI.
+- **`aws_deploy_guide.md`**: Step-by-step instructions for deploying to **AWS App Runner** or **AWS ECS (Fargate)** with **AWS Secrets Manager (AES-256 Encryption)**.
+
+### Run Web Dashboard Locally
 ```bash
-python main.py
+streamlit run app/ui/dashboard.py
 ```
 
-Run individual module tests:
+### Build & Run Docker Container
 ```bash
-python tests/test_full_resume_ats_api.py
-python tests/test_jakes_resume_latex.py
-python tests/test_browser_agent.py
+docker build -t career-os .
+docker run -p 8501:8501 --env-file .env career-os
 ```
 
 ---

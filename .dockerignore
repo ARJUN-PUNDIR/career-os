@@ -1,0 +1,18 @@
+# Exclude local data & virtual environments from Docker image
+data/
+myenv/
+venv/
+ENV/
+.env
+.env.local
+.git/
+.gitignore
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.db-journal
+*.log
+*.pdf
